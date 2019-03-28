@@ -39,3 +39,14 @@ if ((fd = open('/dev/lcd',O_RDWR)) <0 ) {
   /* code */
 }
 ioctl(fd, _7SEG_IOCTL_ON, NULL);
+data.Mode = _7SEG_MODE_HEX_VALUE;
+data.Which= _7SEG_ALL;
+data.Value= 0x2004;
+iocal(fd, _7SEG_IOCTL_SET, &data);
+sleep (3);
+data.Mode=_7SEG_MODE_PATTERN;
+data.Which=_7SEG_D5_INDEX|_7SEG_D8_INDEX;
+data.Value=0x6d7f;
+ioctl(fd,_7SEG_IOCTL_SET,&data);
+ioctl(fd,_7SEG_IOCTL_OFF,NULL);
+close(fd);
