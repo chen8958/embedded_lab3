@@ -1,3 +1,5 @@
+/* define reference*/
+/*
 #include "asm-arm/arch-pxa/lib/creator_pxa270_lcd.h"
 LED_IOCTL_SET
 LED_IOCTL_CLEAR
@@ -11,7 +13,7 @@ LED_D13_INDEX 5
 LED_D14_INDEX 6
 LED_D15_INDEX 7
 LED_D16_INDEX 8
-
+*/
 #include<stdio.h>
 #include<stdlib.h>
 #include<sys/fcntl.h>
@@ -26,24 +28,37 @@ int main(int argc, char const *argv[]) {
 
   unsigned short data;
 
-  if((fd = open('/dev/lcd',O_RDWR)) < 0){
+
+  if((fd = open("/dev/lcd",O_RDWR)) < 0){
     printf("Open /dev/lcd_faild.\n");
     exit(-1);
   }
+
+  /*
+  fd = open("/dev/lcd",O_RDWR);
+  printf("done open\n");
+  */
+
   data = LED_ALL_ON;
-  iocal(fd,LED_IOCTL_SET, &data);
+  ioctl(fd,LED_IOCTL_SET, &data);
   printf("turn on all LED lamps\n" );
   sleep(3);
 
   data = LED_ALL_OFF;
-  iocal(fd, LED_IOCTL_BIT_SET, &data);
+  ioctl(fd, LED_IOCTL_SET, &data);
+  printf("turn off all LED lamp\n" );
+  sleep(3);
+
+  data = LED_D9_INDEX;
+  ioctl(fd, LED_IOCTL_BIT_SET, &data);
   printf("turn on D9\n" );
   sleep(3);
 
   data = LED_D9_INDEX;
-  iocal(fd, LED_IOCTL_BIT_CLEAR, &data);
+  ioctl(fd, LED_IOCTL_BIT_CLEAR, &data);
   printf("turn off D9\n" );
   sleep(3);
+
 
   close(fd);
   return 0;

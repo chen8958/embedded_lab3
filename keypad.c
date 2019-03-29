@@ -1,3 +1,4 @@
+/*
 #define VK_S2   1
 #define VK_S3   2
 #define VK_S4   3
@@ -14,26 +15,40 @@
 #define VK_S15  0
 #define VK_S16  15
 #define VK_S17  13
+*/
 
-unsigned short  key;
-int             fd, ret;
-if ((fd = open("/dev/lcd", O_RDWR)) < 0) {
-  return (-1);
-  /* code */
-}
-ioctl(fd, KEY_IOCTL_CLEAR, key);
-while (1) {
-  ret = ioctl(fd, KEY_IOCTL_CHECK_EMPTY, &key);
-  if (ret < 0) {
-    sleep(1);
-    continue;
+#include<stdio.h>
+#include<stdlib.h>
+#include<sys/fcntl.h>
+#include<sys/ioctl.h>
+#include<unistd.h>
+#include"asm-arm/arch-pxa/lib/creator_pxa270_lcd.h"
+
+
+int main(int argc, char const *argv[]) {
+  unsigned short  key;
+  int             fd, ret;
+  if ((fd = open("/dev/lcd", O_RDWR)) < 0) {
+    return (-1);
     /* code */
   }
-  ret = ioctl(fd, KEY_IOCTL_GET_CHAR, &key);
-  if ((key & 0xff) == '#') {
-    break;
+  ioctl(fd, KEY_IOCTL_CLEAR, key);
+  while (1) {
+    ret = ioctl(fd, KEY_IOCTL_CHECK_EMTPY, &key);
+    if (ret < 0) {
+      sleep(1);
+      continue;
+      /* code */
+    }
+    ret = ioctl(fd, KEY_IOCTL_GET_CHAR, &key);
+    printf("%c\n",(key & 0xff));
+    if ((key & 0xff) == '#') {
+      break;
+      /* code */
+    }
     /* code */
   }
-  /* code */
+  close(fd);
+
+  return 0;
 }
-close(fd);
