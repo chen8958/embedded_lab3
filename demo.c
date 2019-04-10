@@ -6,11 +6,12 @@
 #include "asm-arm/arch-pxa/lib/creator_pxa270_lcd.h"
 int main(int argc, char const *argv[]) {
   unsigned short  led_data, key;
-  int             fd, ret, i=0, i_max=0;
+  int             fd, ret, i=0, i_max=0,turn=0;
   int             input[10];
   unsigned long   seg = 0;
   _7seg_info_t    seg_data;
   lcd_write_info_t display;
+
 
   if ((fd = open("/dev/lcd", O_RDWR)) < 0) {
     printf("open /dev/lcd fail\n" );
@@ -57,6 +58,7 @@ int main(int argc, char const *argv[]) {
       default:
         input[i_max++]=(key & 0xff)-'0';
 
+
     }
 
 
@@ -76,6 +78,72 @@ int main(int argc, char const *argv[]) {
   printf("loop start \n");
 
   while (1) {
+      if (turn==0) {
+          /* code */
+          ioctl(fd,LCD_IOCTL_CLEAR,NULL);
+          display.Count =sprintf((char*)display.Msg,"       *\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"      ***\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"     *****\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"    *******\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"   *********\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"  ***********\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg," *************\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"***************");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          turn=1;
+      }
+      else{
+          ioctl(fd,LCD_IOCTL_CLEAR,NULL);
+          display.Count =sprintf((char*)display.Msg,"       *\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"      ***\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"     *****\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"    *******\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"   *********\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"  ***********\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg," *************\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"***************");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg," *************\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"  ***********\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"   *********\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"    *******\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"     *****\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"      ***\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          display.Count =sprintf((char*)display.Msg,"       *\n");
+          ioctl(fd,LCD_IOCTL_WRITE,&display);
+          turn=0;
+      }
+
+
+
   /*LED part*/
     led_data=led_data << 4;
     led_data = 0xff & (led_data+input[i]);
@@ -152,3 +220,34 @@ int main(int argc, char const *argv[]) {
   close(fd);
   return 0;
 }
+/*
+void printtriangle(){
+    ioctl(fd,LCD_IOCTL_CLEAR,NULL);
+    display.Count =sprintf((char*)display.Msg,
+"       **       \n
+       **       \n
+      ****      \n
+      ****      \n
+     ******     \n
+     ******     \n
+    ********    \n
+    ********    \n
+   **********   \n
+   **********   \n
+  ************  \n
+  ************  \n
+ ************** \n
+ ************** \n
+****************\n
+****************\n");
+    ioctl(fd,LCD_IOCTL_WRITE,&display);
+
+
+}
+*/
+/*
+void printrectangle(){
+
+
+}
+*/
