@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unist.h>
+#include <unistd.h>
 
 #include "sockop.h"
 

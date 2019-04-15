@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unist.h>
+#include <unistd.h>
 
 #include "sockop.h"
 
@@ -20,6 +20,7 @@ int main(int argc, char const *argv[]) {
     if ((n = write(connfd, argv[3], strlen(argv[3]))) == -1){
         errexit("Error : write()\n");
     }
+    memset(buf, 0, BUFSIZE);
     if ((n = read(connfd, buf, BUFSIZE)) == -1){
         errexit("Error : read()\n");
     }
