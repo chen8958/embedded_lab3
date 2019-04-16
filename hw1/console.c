@@ -4,7 +4,10 @@
 #include <fstream>
 #include <string.h>
 #include <vector>
+#include <time.h>
 using namespace std;
+/*system time*/
+time_t my_time = time(NULL);
 class console{
 private:
     vector<int> seat_num;
@@ -14,7 +17,7 @@ private:
 public:
     console();
     void set_concert(string );
-    void buy();
+    void buy(char ,int);
     void set_stadium(string );
     void pass();
     void add_seat_num(int );
@@ -31,7 +34,6 @@ console::console(){
     concert="hello";
 }
 void console::print(){
-    printf("do print \n");
     printf("%s ",concert.c_str());
     printf("%s ",stadium.c_str());
     for (int i=0;i<seat_num.size();i++){
@@ -46,8 +48,16 @@ void console::add_seat_num(int a){
 void console::add_seat_kind(char a){
     seat_kind.push_back(a);
 }
-void console::buy(){
-    printf("con buy\n");
+void console::buy(char seat,int num){
+    printf("char = %c num = %d \n",seat,num);
+    for(int i=0;i<seat_kind.size();i++){
+        if(seat_kind[i]==seat){
+            seat_num[i]=seat_num[i]-num;
+        }
+    }
+    for(int i=0;i<num;i++){
+        cout<<this->concert<<" "<<seat<<" "<<i<<" "<<ctime(&my_time)<<endl;
+    }
 }
 void console::pass(){
     printf("con pass\n");
@@ -64,6 +74,7 @@ int main(int argc, char const *argv[]) {
 
     ifstream fin("concert.txt");
     string s;
+    char input[10];
     fin >> s;
     int count = stoi(s);
     console *con;
@@ -84,7 +95,18 @@ int main(int argc, char const *argv[]) {
     for(int i=0;i<count;i++){
         con[i].print();
     }
-    
+    scanf("%s",input);
+
+    const char *sep = "/";
+    char *get_con,*get_seat,*get_num;
+    get_con = strtok(input, sep);
+    get_seat = strtok(NULL, sep);
+    get_num = strtok(NULL, sep);
+    printf("%s %s %s\n",get_con,get_seat,get_num);
+    con[get_con[3]-'0'-1].buy(get_seat[0],atoi(get_num));
+    con[get_con[3]-'0'-1].print();
+    //printf("%s",input);
+
 
     return 0;
 }
