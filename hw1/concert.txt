@@ -1,0 +1,6 @@
+5
+con1 std1 A 1000 B 400
+con2 std2 A 500  C 300
+con3 std2 A 500
+con4 std3 A 100
+con5 std1 B 500
