@@ -1,14 +1,18 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
+#include <linux/uaccess.h>
 #include <linux/fs.h>
 MODULE_LICENSE("GPL");
+char devbuf[8];
 static ssize_t my_read(struct file *fp,char *buf, size_t count,loff_t *fpos){
     printk("call read \n");
+    copy_to_user(buf, devbuf, 7);
     return count;
 }
 static ssize_t my_write(struct file *fp,const char *buf,size_t count,loff_t *fpos){
     printk("call write");
+    copy_from_user(devbuf, buf, 7);
     return count;
 }
 static int my_open(struct inode *inode, struct file *fp){
