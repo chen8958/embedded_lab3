@@ -7,7 +7,7 @@
 #include <time.h>
 using namespace std;
 /*system time*/
-time_t my_time = time(NULL);
+time_t my_time;
 class console{
 private:
     vector<int> seat_num;
@@ -34,12 +34,10 @@ console::console(){
     concert="hello";
 }
 void console::print(){
-    printf("%s ",concert.c_str());
-    printf("%s ",stadium.c_str());
+    printf("%s :\n",concert.c_str());
     for (int i=0;i<seat_num.size();i++){
-        printf("%c %d ",seat_kind[i],seat_num[i]);
+        printf("%c lefts %d \n",seat_kind[i],seat_num[i]);
     }
-    printf(" \n ");
 
 }
 void console::add_seat_num(int a){
@@ -55,8 +53,10 @@ void console::buy(char seat,int num){
             seat_num[i]=seat_num[i]-num;
         }
     }
+    my_time = time(NULL);
+    tm *tmptr = localtime(&my_time);
     for(int i=0;i<num;i++){
-        cout<<this->concert<<" "<<seat<<" "<<i<<" "<<ctime(&my_time)<<endl;
+        cout<<this->concert<<" "<<seat<<" "<<i<<" "<<tmptr->tm_hour<<':'<<tmptr->tm_min<<':'<<tmptr->tm_sec<<endl;
     }
 }
 void console::pass(){
@@ -71,7 +71,6 @@ console::console(char *s){
 
 int main(int argc, char const *argv[]) {
     /*read header*/
-
     ifstream fin("concert.txt");
     string s;
     char input[10];
@@ -92,21 +91,21 @@ int main(int argc, char const *argv[]) {
         }
 
     }
-    for(int i=0;i<count;i++){
-        con[i].print();
+    while(1){
+        for(int i=0;i<count;i++){
+            con[i].print();
+        }
+        scanf("%s",input);
+        const char *sep = "/";
+        char *get_con,*get_seat,*get_num;
+        get_con = strtok(input, sep);
+        get_seat = strtok(NULL, sep);
+        get_num = strtok(NULL, sep);
+        //printf("%s %s %s\n",get_con,get_seat,get_num);
+        con[get_con[3]-'0'-1].buy(get_seat[0],atoi(get_num));
+        con[get_con[3]-'0'-1].print();
+
     }
-    scanf("%s",input);
-
-    const char *sep = "/";
-    char *get_con,*get_seat,*get_num;
-    get_con = strtok(input, sep);
-    get_seat = strtok(NULL, sep);
-    get_num = strtok(NULL, sep);
-    printf("%s %s %s\n",get_con,get_seat,get_num);
-    con[get_con[3]-'0'-1].buy(get_seat[0],atoi(get_num));
-    con[get_con[3]-'0'-1].print();
     //printf("%s",input);
-
-
     return 0;
 }
