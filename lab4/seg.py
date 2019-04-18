@@ -12,7 +12,7 @@ screen = tk.Canvas(root)
 screen.grid()
 
 # Order 7 segments clockwise from top left, with crossbar last.
-# Coordinates of each segment are (x0, y0, x1, y1) 
+# Coordinates of each segment are (x0, y0, x1, y1)
 # given as offsets from top left measured in segment lengths.
 offsets = (
     (0, 0, 1, 0),  # top

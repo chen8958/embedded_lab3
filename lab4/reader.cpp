@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 int main(int argc, char *argv[]) {
-	
+
 	if(argc != 4) {
 		printf("Usage: reader <server_ip> <port> <device_path>");
 		exit(-1);
@@ -31,13 +31,13 @@ int main(int argc, char *argv[]) {
 		printf("Error connect to server\n");
 		exit(-1);
 	}
-	
+
 	int fd;
 	if((fd = open(argv[3], O_RDWR)) < 0) {
 		printf("Error open %s\n",argv[3]);
 		exit(-1);
 	}
-	
+
 	char buf[8] = {0};
 	while(1) {
 		sleep(1);
@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
 			printf("Error read %s\n",argv[3]);
 			exit(-1);
 		}
+		printf("read is = %s\n",buf);
 
 		// sent msg
 		int n;
@@ -54,7 +55,7 @@ int main(int argc, char *argv[]) {
 			exit(-1);
 		}
 	}
-	
+
 	close(fd);
 	close(connfd);
 	return 0;
