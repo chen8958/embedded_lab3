@@ -195,6 +195,66 @@ int main(int argc, char const *argv[]) {
             ptr[6]=0;
             write(fd,ptr,7);
             break;
+            case 'A':
+            ptr[0]=1;
+            ptr[1]=1;
+            ptr[2]=1;
+            ptr[3]=0;
+            ptr[4]=1;
+            ptr[5]=1;
+            ptr[6]=1;
+            write(fd,ptr,7);
+            break;
+            case 'B':
+            ptr[0]=0;
+            ptr[1]=0;
+            ptr[2]=1;
+            ptr[3]=1;
+            ptr[4]=1;
+            ptr[5]=1;
+            ptr[6]=1;
+            write(fd,ptr,7);
+            break;
+            case 'C':
+            ptr[0]=1;
+            ptr[1]=0;
+            ptr[2]=0;
+            ptr[3]=1;
+            ptr[4]=1;
+            ptr[5]=1;
+            ptr[6]=0;
+            write(fd,ptr,7);
+            break;
+            case 'D':
+            ptr[0]=0;
+            ptr[1]=1;
+            ptr[2]=1;
+            ptr[3]=1;
+            ptr[4]=1;
+            ptr[5]=0;
+            ptr[6]=1;
+            write(fd,ptr,7);
+            break;
+            case 'E':
+            ptr[0]=1;
+            ptr[1]=0;
+            ptr[2]=0;
+            ptr[3]=1;
+            ptr[4]=1;
+            ptr[5]=1;
+            ptr[6]=1;
+            write(fd,ptr,7);
+            break;
+            case 'F':
+            ptr[0]=1;
+            ptr[1]=0;
+            ptr[2]=0;
+            ptr[3]=0;
+            ptr[4]=1;
+            ptr[5]=1;
+            ptr[6]=1;
+            write(fd,ptr,7);
+            break;
         }
         sleep(3);
     }

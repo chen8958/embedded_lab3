@@ -1,0 +1,6 @@
+5
+std1 A 1000 B 500
+std2 A 500  C 300
+std3 A 500
+std4 A 100
+std5 B 500
