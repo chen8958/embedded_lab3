@@ -83,13 +83,11 @@ public:
     void add_seat_num(int );
     void add_seat_kind(char );
     void print();
-    void select();
+    void select(char &,int &);
     void check(limit );
 };
-void console::select(){
+void console::select(char &seat,int &num){
     this->print();
-    char seat;
-    int num;
     printf("seat is = \n");
     display.Count =sprintf((char*)display.Msg, "seat is = \n");
     ioctl(fd,LCD_IOCTL_WRITE,&display);
@@ -100,7 +98,7 @@ void console::select(){
     ioctl(fd,LCD_IOCTL_WRITE,&display);
     //scanf("%d",&num);
     num=atoi(input().c_str());
-    this->buy(seat,num);
+    //this->buy(seat,num);
 }
 void console::set_concert(string str){
     concert = str;
@@ -242,20 +240,39 @@ int main(int argc, char const *argv[]) {
         }
     }
 
-    int con_order;
+    int *con_order;
+    int order_num,*num;
+    char *seat;
     while(1){
         ioctl(fd,LCD_IOCTL_CLEAR,NULL);
-        for(int i=0;i<count;i++){
-            printf("con%d\n",i+1);
-            display.Count =sprintf((char*)display.Msg, "con%d\n",i+1);
-            ioctl(fd,LCD_IOCTL_WRITE,&display);
-        }
-        printf("con = \n");
-        display.Count =sprintf((char*)display.Msg, "con = \n");
+        printf("order = \n");
+        display.Count =sprintf((char*)display.Msg, "order = \n");
         ioctl(fd,LCD_IOCTL_WRITE,&display);
-        //scanf("%d",&con_order);
-        con_order=atoi(input().c_str());
-        con[con_order-1].select();
+        order_num=atoi(input().c_str());
+        num = new int [order_num];
+        seat = new char [order_num];
+        con_order = new int [order_num];
+        for (int j = 0; j < order_num; j++) {
+            for(int i = 0;i < count; i++){
+                printf("con%d\n",i+1);
+                display.Count =sprintf((char*)display.Msg, "con%d\n",i+1);
+                ioctl(fd,LCD_IOCTL_WRITE,&display);
+            }
+            printf("con = \n");
+            display.Count =sprintf((char*)display.Msg, "con = \n");
+            ioctl(fd,LCD_IOCTL_WRITE,&display);
+            //scanf("%d",&con_order);
+            con_order[j]=atoi(input().c_str());
+            con[con_order[j]-1].select(seat[j],num[j]);
+        }
+        for (int i = 0; i < order_num; i++) {
+            con[con_order[i]-1].buy(seat[i],num[i]);
+        }
+        free(num);
+        free(seat);
+        free(con_order);
+
+
     }
     return 0;
 }
