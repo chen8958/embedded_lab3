@@ -107,11 +107,30 @@ void console::set_stadium(string str){
     stadium = str;
 }
 void console::print(){
+    int row = 0;
     ioctl(fd,LCD_IOCTL_CLEAR,NULL);
     printf("%s :\n",concert.c_str());
     display.Count =sprintf((char*)display.Msg, "%s :\n",concert.c_str());
     ioctl(fd,LCD_IOCTL_WRITE,&display);
     for (int i=0;i<seat_num.size();i++){
+        row ++;
+        if(row >= 15){
+            display.Count =sprintf((char*)display.Msg, "press '*' to change page\n");
+            ioctl(fd,LCD_IOCTL_WRITE,&display);
+            while (1) {
+              ret = ioctl(fd, KEY_IOCTL_CHECK_EMTPY, &key);
+              if (ret < 0) {
+                sleep(1);
+                continue;
+              }
+              ret = ioctl(fd, KEY_IOCTL_GET_CHAR, &key);
+              if ((key & 0xff) == '*') {
+                break;
+              }
+            }
+            row = 0;
+            ioctl(fd,LCD_IOCTL_CLEAR,NULL);
+        }
         printf("%c lefts %d \n",seat_kind[i],seat_num[i]);
         display.Count =sprintf((char*)display.Msg, "%c lefts %d \n",seat_kind[i],seat_num[i]);
         ioctl(fd,LCD_IOCTL_WRITE,&display);
