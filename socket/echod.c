@@ -12,7 +12,7 @@
 
 int main(int argc, char *argv[])
 {
-	int sockfd, connfd; /* socket descriptor */
+	int sockfd, connfd=0; /* socket descriptor */
 	struct sockaddr_in addr_cln;
 	socklen_t sLen = sizeof(addr_cln);
 	int n;
@@ -30,15 +30,15 @@ int main(int argc, char *argv[])
 		connfd = accept(sockfd, (struct sockaddr *) &addr_cln, &sLen);
 		if (connfd == -1)
 			errexit("Error: accept()\n");
-
 		/* read message from client */
 		if ((n = read(connfd, rcv, BUFSIZE)) == -1)
 			errexit("Error: read()\n");
 		/* write message back to client */
+		printf("rcv = %.*s\n",n,rcv);
+		sleep(10);
 		n = sprintf(snd, "Server: %.*s", n ,rcv);
 		if ((n = write(connfd, snd, n)) == -1)
 			errexit("Error: write()\n");
-		
 		/* close client socket */
 		close(connfd);
 	}
