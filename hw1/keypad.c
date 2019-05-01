@@ -180,7 +180,7 @@ void console::buy(char seat,int num){
         after_buy_time = time(NULL);
         tmptr_after = localtime(&after_buy_time);
         cout<<this->concert<<" "<<seat<<" "<<i<<" "<<tmptr_after->tm_hour<<':'<<tmptr_after->tm_min<<':'<<tmptr_after->tm_sec<<endl;
-        display.Count =sprintf((char*)display.Msg, "%s %c %d %d:%d:%d\n",this->concert.c_str(),seat,i,tmptr_after,tmptr_after->tm_hour,tmptr_after->tm_min,tmptr_after->tm_sec);
+        display.Count =sprintf((char*)display.Msg, "%s %c %d %d:%d:%d\n",this->concert.c_str(),seat,i,tmptr_after->tm_hour,tmptr_after->tm_min,tmptr_after->tm_sec);
         ioctl(fd,LCD_IOCTL_WRITE,&display);
     }
     printf(" %d \n",led_data);
