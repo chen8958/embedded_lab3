@@ -1,0 +1,6 @@
+5
+std1 A 1000 B 500 C 50 D 40 E 50 F 50 G 50 H 10 I 50 J 50 K 30 L 50 N 50 O 70 P 50 Q 5 R 30 S 60
+std2 A 500  C 300
+std3 A 500
+std4 A 100
+std5 B 500
