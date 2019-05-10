@@ -9,13 +9,19 @@
 #include <vector>
 #include <pthread.h>
 #include <time.h>
-#define BUFSIZE	1024
+#define BUFSIZE	10000
 using namespace std;
+time_t before_buy_time,after_buy_time;
 int OrderCustomer = 0;
 int count;//con number
 struct ClientData{
     int OrderCustomer;
     int new_client_socket;
+};
+struct oneSectionCommand{
+    int conOrder;
+    char seatKind;
+    int seatNum;
 };
 class limit{
 private:
@@ -62,8 +68,56 @@ public:
     void add_seat_kind(char );
     void check(limit );
     string detail();
+    bool isSeatExist(oneSectionCommand &);
+    bool isSeatEnough(oneSectionCommand &);
+    int index(char);
+    void buyone(char);
+    string buy(oneSectionCommand &);
 };
 console *con;
+void console::buyone(char seat){
+    seat_num[index(seat)]--;
+}
+string console::buy(oneSectionCommand &orderOnesection){
+    string buf;
+    char oneline[BUFSIZE];
+    tm *tmptr_before = localtime(&before_buy_time);
+    tm *tmptr_after;
+    for(int i=0;i<orderOnesection.seatNum;i++){
+        after_buy_time = time(NULL);
+        tmptr_after = localtime(&after_buy_time);
+        sprintf(oneline," %s %c %c%d %d\n",concert.c_str(),orderOnesection.seatKind,orderOnesection.seatKind,i,tmptr_after->tm_sec-tmptr_before->tm_sec);
+        buf.append(oneline);
+        buyone(orderOnesection.seatKind);
+    }
+    return buf;
+}
+int console::index(char seat){
+    for(int i=0;i<seat_num.size();i++){
+        if(seat_kind[i]==seat){
+            return i;
+        }
+    }
+}
+bool console::isSeatEnough(oneSectionCommand &buf){
+    if(seat_num[index(buf.seatKind)]>=buf.seatNum){
+        return 1;
+    }
+    else{
+        return 0;
+    }
+}
+
+
+bool console::isSeatExist(oneSectionCommand &buf){
+    for(int i=0;i<seat_num.size();i++){
+        if(seat_kind[i]==buf.seatKind){
+            return 1;
+        }
+    }
+    return 0;
+}
+
 string console::detail(){
     printf("in console::detail\n");
     string buf;
@@ -105,14 +159,29 @@ void console::check(limit a){
     }
 }
 
-
+oneSectionCommand split(string &command){
+    cout<<"do spilt "<<command<<endl;
+    oneSectionCommand buf;
+    stringstream processSection(command.c_str());
+    string token;
+    getline(processSection,token,'/');
+    buf.conOrder = token.c_str()[3]-'0'-1;
+    getline(processSection,token,'/');
+    buf.seatKind = token.c_str()[0];
+    getline(processSection,token,'/');
+    buf.seatNum = atoi(token.c_str());
+    cout<<"conorder = "<<buf.conOrder<<" seatkind = "<<buf.seatKind<<" seatNum = "<<buf.seatNum<<endl;
+    return buf;
+}
 
 string show(string &targetCon){
     if(targetCon.c_str()[3]-'0'<=count){
         return con[targetCon.c_str()[3]-'0'-1].detail();
     }
     else{
-        return "not exist con";
+        char buf[BUFSIZE];
+        sprintf(buf,"con%d not found\n",targetCon.c_str()[3]-'0');
+        return buf;
     }
 
 }
@@ -124,7 +193,56 @@ string showall(){
     }
     return allinformation;
 }
-
+bool isSeatEnough(stringstream &orderSheet){
+    printf("do seatenough\n");
+    string processSection;
+    oneSectionCommand buf;
+    while(!orderSheet.eof()){
+        orderSheet>>processSection;
+        buf = split(processSection);
+        if(!con[buf.conOrder].isSeatEnough(buf)){
+            return 0;
+        }
+    }
+    return 1;
+}
+bool isSeatExist(stringstream &orderSheet){
+    printf("do seatexist\n");
+    string processSection;
+    oneSectionCommand buf;
+    while(!orderSheet.eof()){
+        orderSheet>>processSection;
+        buf = split(processSection);
+        if(!con[buf.conOrder].isSeatExist(buf)){
+            return 0;
+        }
+    }
+    return 1;
+}
+string findnotExistseat(stringstream &orderSheet){
+    string processSection;
+    oneSectionCommand buf;
+    while(!orderSheet.eof()){
+        orderSheet>>processSection;
+        buf = split(processSection);
+        if(!con[buf.conOrder].isSeatExist(buf)){
+            char exceptinformation[BUFSIZE];
+            sprintf(exceptinformation,"con%d does not have %c ticket\n",buf.conOrder+1,buf.seatKind);
+            return exceptinformation;
+        }
+    }
+}
+string orderTicket(stringstream &orderSheet){
+    string processSection;
+    oneSectionCommand buf;
+    string recipt;
+    while(!orderSheet.eof()){
+        orderSheet>>processSection;
+        buf = split(processSection);
+        recipt.append(con[buf.conOrder].buy(buf));
+    }
+    return recipt;
+}
 string commandRecognize(stringstream &command){
     string commandFirstsection,commandSecondsection;
     command>>commandFirstsection;
@@ -142,23 +260,33 @@ string commandRecognize(stringstream &command){
         command>>commandSecondsection;
         return show(commandSecondsection);
     }
-    else{
+    else if(commandFirstsection.c_str()[0]=='c'){
         cout<<"do order ticket"<<endl;
-        command.seekg(0);
-        if(isCommandillegal){
-            retrun ;
+        if(commandFirstsection.c_str()[3]-'0'>count){
+            char buf[BUFSIZE];
+            sprintf(buf,"con%d not found\n",commandFirstsection.c_str()[3]-'0');
+            return buf;
         }
-        orderTicket(command);
+        command.seekg(0);
+        if(!isSeatExist(command)){
+            command.seekg(0);
+            return findnotExistseat(command);
+        }
+        command.seekg(0);
+        if(!isSeatEnough(command)){
+            return "sorry,remaining ticket number not enough\n";
+        }
+        command.seekg(0);
+        return orderTicket(command);
+    }
+    else{
+        return "input format not valid\n";
     }
 }
-void orderTicket(stringstream &orderSheet){
-    string processSection;
-    while(orderSheet.eof()){
-        order>>processSection;
-        check(processSection);
-    }
-    return
-}
+
+
+
+
 
 void *handleRequest(void *ClientDataPtr){
     stringstream command;
@@ -172,13 +300,18 @@ void *handleRequest(void *ClientDataPtr){
     /* write message back to client */
         printf("from no. %d client message = %.*s\n",new_client_socket.OrderCustomer,MessageLength,ReceiveMessage);
         command.str(ReceiveMessage);
+        before_buy_time = time(NULL);
+
         //MessageLength = sprintf(SendMessage, "from no. %d client message = %.*s\n",new_client_socket.OrderCustomer,MessageLength,ReceiveMessage);
         MessageLength = sprintf(SendMessage, "%s",commandRecognize(command).c_str());
-        printf("done message = %s\n",commandRecognize(command).c_str());
+        //printf("done message = %s\n",commandRecognize(command).c_str());
         printf("send message = %s\n",SendMessage);
+
         if ((MessageLength = write(new_client_socket.new_client_socket, SendMessage, MessageLength)) == -1)
             pthread_exit(NULL);
         command.clear();
+        memset(SendMessage, 0, BUFSIZE);
+        memset(ReceiveMessage, 0, BUFSIZE);
     }
 }
 

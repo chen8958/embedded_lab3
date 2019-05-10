@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include "sockop.h"
 #include <iostream>
-#define BUFSIZE	1024
+#define BUFSIZE	10000
 using namespace std;
 
 int main(int argc, char *argv[])
