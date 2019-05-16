@@ -9,7 +9,7 @@
 #include <vector>
 #include <pthread.h>
 #include <time.h>
-#define BUFSIZE	10000
+#define BUFSIZE	1024
 using namespace std;
 time_t before_buy_time,after_buy_time;
 int OrderCustomer = 0;
@@ -57,6 +57,7 @@ class console{
 private:
     vector<int> seat_num;
     vector<char> seat_kind;
+    vector<int> seat_id;
     string stadium;
     string concert;
 public:
@@ -66,6 +67,9 @@ public:
     void set_stadium(string );
     void add_seat_num(int );
     void add_seat_kind(char );
+    void add_seat_id(){
+        seat_id.push_back(0);
+    }
     void check(limit );
     string detail();
     bool isSeatExist(oneSectionCommand &);
@@ -86,7 +90,7 @@ string console::buy(oneSectionCommand &orderOnesection){
     for(int i=0;i<orderOnesection.seatNum;i++){
         after_buy_time = time(NULL);
         tmptr_after = localtime(&after_buy_time);
-        sprintf(oneline," %s %c %c%d %d\n",concert.c_str(),orderOnesection.seatKind,orderOnesection.seatKind,i,tmptr_after->tm_sec-tmptr_before->tm_sec);
+        sprintf(oneline,"%s %c %c%d %d\n",concert.c_str(),orderOnesection.seatKind,orderOnesection.seatKind,seat_id[index(orderOnesection.seatKind)]++,tmptr_after->tm_sec-tmptr_before->tm_sec);
         buf.append(oneline);
         buyone(orderOnesection.seatKind);
     }
@@ -122,12 +126,13 @@ string console::detail(){
     printf("in console::detail\n");
     string buf;
     char getlinebuf[BUFSIZE];
-    sprintf(getlinebuf,"%s\n",concert.c_str());
+    sprintf(getlinebuf,"%s",concert.c_str());
     buf.append(getlinebuf);
     for(int i=0; i<seat_num.size();i++){
-        sprintf(getlinebuf,"%c %d\n",seat_kind[i],seat_num[i]);
+        sprintf(getlinebuf," %c %d",seat_kind[i],seat_num[i]);
         buf.append(getlinebuf);
     }
+    buf.append("\n");
     return buf;
 }
 void console::set_concert(string str){
@@ -175,12 +180,16 @@ oneSectionCommand split(string &command){
 }
 
 string show(string &targetCon){
+    char buf[BUFSIZE];
     if(targetCon.c_str()[3]-'0'<=count){
         return con[targetCon.c_str()[3]-'0'-1].detail();
     }
-    else{
-        char buf[BUFSIZE];
+    else if(targetCon.c_str()[0]=='c'){
         sprintf(buf,"con%d not found\n",targetCon.c_str()[3]-'0');
+        return buf;
+    }
+    else{
+        sprintf(buf,"%s not found\n",targetCon.c_str());
         return buf;
     }
 
@@ -196,13 +205,20 @@ string showall(){
 bool isSeatEnough(stringstream &orderSheet){
     printf("do seatenough\n");
     string processSection;
-    oneSectionCommand buf;
+    oneSectionCommand buf,prebuf;
     while(!orderSheet.eof()){
         orderSheet>>processSection;
         buf = split(processSection);
+        if(prebuf.conOrder==buf.conOrder&&prebuf.seatKind==buf.seatKind){
+            buf.seatNum=buf.seatNum+prebuf.seatNum;
+        }
         if(!con[buf.conOrder].isSeatEnough(buf)){
+            cout<<"con"<<buf.conOrder<<" seat "<<buf.seatKind<<" num= "<<buf.seatNum<<endl;
             return 0;
         }
+        prebuf.conOrder=buf.conOrder;
+        prebuf.seatKind=buf.seatKind;
+        prebuf.seatNum=buf.seatNum;
     }
     return 1;
 }
@@ -213,9 +229,11 @@ bool isSeatExist(stringstream &orderSheet){
     while(!orderSheet.eof()){
         orderSheet>>processSection;
         buf = split(processSection);
+
         if(!con[buf.conOrder].isSeatExist(buf)){
             return 0;
         }
+
     }
     return 1;
 }
@@ -243,12 +261,14 @@ string orderTicket(stringstream &orderSheet){
     }
     return recipt;
 }
-string commandRecognize(stringstream &command){
+string commandRecognize(stringstream &command,int &connfd){
     string commandFirstsection,commandSecondsection;
     command>>commandFirstsection;
+    char buf[BUFSIZE];
     //command.seekg(0);
     if(commandFirstsection=="exit"){
         cout<<"do exit"<<endl;
+        close(connfd);
         pthread_exit(NULL);
     }
     else if(commandFirstsection=="showall"){
@@ -263,7 +283,6 @@ string commandRecognize(stringstream &command){
     else if(commandFirstsection.c_str()[0]=='c'){
         cout<<"do order ticket"<<endl;
         if(commandFirstsection.c_str()[3]-'0'>count){
-            char buf[BUFSIZE];
             sprintf(buf,"con%d not found\n",commandFirstsection.c_str()[3]-'0');
             return buf;
         }
@@ -274,13 +293,14 @@ string commandRecognize(stringstream &command){
         }
         command.seekg(0);
         if(!isSeatEnough(command)){
-            return "sorry,remaining ticket number not enough\n";
+            return "sorry, remaining ticket number not enough\n";
         }
         command.seekg(0);
         return orderTicket(command);
     }
     else{
-        return "input format not valid\n";
+        sprintf(buf,"%s not found\n",command.str().c_str());
+        return buf;
     }
 }
 
@@ -303,7 +323,7 @@ void *handleRequest(void *ClientDataPtr){
         before_buy_time = time(NULL);
 
         //MessageLength = sprintf(SendMessage, "from no. %d client message = %.*s\n",new_client_socket.OrderCustomer,MessageLength,ReceiveMessage);
-        MessageLength = sprintf(SendMessage, "%s",commandRecognize(command).c_str());
+        MessageLength = sprintf(SendMessage, "%s",commandRecognize(command,new_client_socket.new_client_socket).c_str());
         //printf("done message = %s\n",commandRecognize(command).c_str());
         printf("send message = %s\n",SendMessage);
 
@@ -331,6 +351,7 @@ int main(int argc, char const *argv[]) {
             con[i].add_seat_kind(s[0]);
             fin >> s;
             con[i].add_seat_num(atoi(s.c_str()));
+            con[i].add_seat_id();
         }
 
     }
@@ -365,8 +386,8 @@ int main(int argc, char const *argv[]) {
 	struct sockaddr_in addr_cln;
 	socklen_t sLen = sizeof(addr_cln);
 	int n;
-    pthread_t threads[30];
-    struct ClientData server[30];
+    pthread_t threads[50];
+    struct ClientData server[50];
 	char SendMessage[BUFSIZE], ReceiveMessage[BUFSIZE];
 	if (argc != 2)
 		errexit("Usage: %s port\n", argv[0]);
