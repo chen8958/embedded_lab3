@@ -301,8 +301,8 @@ string commandRecognize(stringstream &command,int &connfd){
     //command.seekg(0);
     if(commandFirstsection=="exit"){
         cout<<"do exit"<<endl;
-        V(semaphore);
         close(connfd);
+        V(semaphore);
         pthread_exit(NULL);
     }
     else if(commandFirstsection=="showall"){
@@ -347,8 +347,9 @@ void *handleRequest(void *ClientDataPtr){
     struct ClientData new_client_socket =*(ClientData*)ClientDataPtr;
     int MessageLength;
     char ReceiveMessage[BUFSIZE*10],SendMessage[BUFSIZE*10];
-    printf("accept client order : %d \n",new_client_socket.OrderCustomer);
     P(semaphore);
+    printf("accept client order : %d \n",new_client_socket.OrderCustomer);
+
     while(1){
 
         if ((MessageLength = read(new_client_socket.new_client_socket, ReceiveMessage, BUFSIZE)) == -1)
@@ -452,7 +453,7 @@ int main(int argc, char const *argv[]) {
         server[OrderCustomer].OrderCustomer=OrderCustomer;
         server[OrderCustomer].new_client_socket=new_client_socket;
         pthread_create(&threads[OrderCustomer],NULL,handleRequest,&server[OrderCustomer]);
-        //OrderCustomer++;
+        OrderCustomer++;
 	}
 	/* close server socket */
 	close(sockfd);
