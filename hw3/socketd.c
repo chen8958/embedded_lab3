@@ -13,6 +13,7 @@
 #include <errno.h>
 #define BUFSIZE	1024
 int semaphore;
+int con_count;
 long int key;
 int P(int s){
     struct sembuf sop;
@@ -68,9 +69,9 @@ public:
     void add_seat_kind(char );
     void set_stadium(string );
     void print(){
-        printf("%s\n",stadium.c_str());
+        //printf("%s\n",stadium.c_str());
         for (int i=0;i<seat_num.size();i++){
-            printf("%c lefts %d \n",seat_kind[i],seat_num[i]);
+        //    printf("%c lefts %d \n",seat_kind[i],seat_num[i]);
         }
 
     }
@@ -154,7 +155,7 @@ bool console::isSeatExist(oneSectionCommand &buf){
 }
 
 string console::detail(){
-    printf("in console::detail\n");
+    //printf("in console::detail\n");
     string buf;
     char getlinebuf[BUFSIZE];
     sprintf(getlinebuf,"%s",concert.c_str());
@@ -184,9 +185,9 @@ void console::check(limit a){
             if(seat_kind[i] == a.get_seat_kind(j)){
                 //printf("check done concert = %s \nconsole std = %s  con std = %s \nconcert = %c console = %c \nconcert_num = %d console_num = %d\n",concert.c_str(),a.get_stadium().c_str(),stadium.c_str(),seat_kind[i],a.get_seat_kind(j),seat_num[i],a.get_seat_num(j));
                 if(a.get_seat_num(j) < seat_num[i]){
-                    printf("ilegal!!");
-                    printf("limit = %d < concert = %d",a.get_seat_num(j),seat_num[i]);
-                    printf("do check %s %s %c %c\n",concert.c_str(),stadium.c_str(),a.get_seat_kind(j),seat_kind[i]);
+                    //printf("ilegal!!");
+                    //printf("limit = %d < concert = %d",a.get_seat_num(j),seat_num[i]);
+                    //printf("do check %s %s %c %c\n",concert.c_str(),stadium.c_str(),a.get_seat_kind(j),seat_kind[i]);
                     exit(-1);
                 }
             }
@@ -196,7 +197,7 @@ void console::check(limit a){
 }
 
 oneSectionCommand split(string &command){
-    cout<<"do spilt "<<command<<endl;
+    //cout<<"do spilt "<<command<<endl;
     oneSectionCommand buf;
     stringstream processSection(command.c_str());
     string token;
@@ -206,7 +207,7 @@ oneSectionCommand split(string &command){
     buf.seatKind = token.c_str()[0];
     getline(processSection,token,'/');
     buf.seatNum = atoi(token.c_str());
-    cout<<"conorder = "<<buf.conOrder<<" seatkind = "<<buf.seatKind<<" seatNum = "<<buf.seatNum<<endl;
+    //cout<<"conorder = "<<buf.conOrder<<" seatkind = "<<buf.seatKind<<" seatNum = "<<buf.seatNum<<endl;
     return buf;
 }
 
@@ -234,7 +235,7 @@ string showall(){
     return allinformation;
 }
 bool isSeatEnough(stringstream &orderSheet){
-    printf("do seatenough\n");
+    //printf("do seatenough\n");
     string processSection;
     oneSectionCommand buf,prebuf;
     while(!orderSheet.eof()){
@@ -244,7 +245,7 @@ bool isSeatEnough(stringstream &orderSheet){
             buf.seatNum=buf.seatNum+prebuf.seatNum;
         }
         if(!con[buf.conOrder].isSeatEnough(buf)){
-            cout<<"con"<<buf.conOrder<<" seat "<<buf.seatKind<<" num= "<<buf.seatNum<<endl;
+            //out<<"con"<<buf.conOrder<<" seat "<<buf.seatKind<<" num= "<<buf.seatNum<<endl;
             return 0;
         }
         prebuf.conOrder=buf.conOrder;
@@ -254,19 +255,53 @@ bool isSeatEnough(stringstream &orderSheet){
     return 1;
 }
 bool isSeatExist(stringstream &orderSheet){
-    printf("do seatexist\n");
+    //printf("do seatexist\n");
     string processSection;
     oneSectionCommand buf;
     while(!orderSheet.eof()){
         orderSheet>>processSection;
         buf = split(processSection);
-
+        /*
+        if(buf.conOrder >= con_count){
+            return 0;
+        }
+        */
         if(!con[buf.conOrder].isSeatExist(buf)){
             return 0;
         }
 
     }
     return 1;
+}
+bool isConExist(stringstream &orderSheet){
+    //printf("do conexist\n");
+    string processSection;
+    oneSectionCommand buf;
+    while(!orderSheet.eof()){
+        orderSheet>>processSection;
+        buf = split(processSection);
+        if(buf.conOrder >= con_count){
+            return 0;
+        }
+        /*
+        if(!con[buf.conOrder].isSeatExist(buf)){
+            return 0;
+        }
+        */
+    }
+    return 1;
+}
+int findnotExistCon(stringstream &orderSheet){
+    //printf("find findnotExistCon\n");
+    string processSection;
+    oneSectionCommand buf;
+    while(!orderSheet.eof()){
+        orderSheet>>processSection;
+        buf = split(processSection);
+        if(buf.conOrder >= con_count){
+            return buf.conOrder+1;
+        }
+    }
 }
 string findnotExistseat(stringstream &orderSheet){
     string processSection;
@@ -285,13 +320,13 @@ string orderTicket(stringstream &orderSheet){
     string processSection;
     oneSectionCommand buf;
     string recipt;
-    cout<<"do orderTicket\n";
+    //cout<<"do orderTicket\n";
     while(!orderSheet.eof()){
         orderSheet>>processSection;
         buf = split(processSection);
         recipt.append(con[buf.conOrder].buy(buf));
     }
-    cout<<"done orderTicket\n";
+    //cout<<"done orderTicket\n";
     return recipt;
 }
 string commandRecognize(stringstream &command,int &connfd){
@@ -300,36 +335,49 @@ string commandRecognize(stringstream &command,int &connfd){
     char buf[BUFSIZE];
     //command.seekg(0);
     if(commandFirstsection=="exit"){
-        cout<<"do exit"<<endl;
+        //cout<<"do exit"<<endl;
         close(connfd);
-        V(semaphore);
+
         pthread_exit(NULL);
     }
     else if(commandFirstsection=="showall"){
-        cout<<"do showall"<<endl;
+        //cout<<"do showall"<<endl;
         return showall();
     }
     else if(commandFirstsection=="show"){
-        cout<<"do show"<<endl;
+        //cout<<"do show"<<endl;
         command>>commandSecondsection;
         return show(commandSecondsection);
     }
     else if(commandFirstsection.c_str()[0]=='c'){
-        cout<<"do check ticket "<<endl;
+        V(semaphore);
+        //cout<<"do check ticket "<<endl;
+        command.seekg(0);
+        if(!isConExist(command)){
+            command.seekg(0);
+            sprintf(buf,"con%d not found\n",findnotExistCon(command));
+            P(semaphore);
+            return buf;
+        }
+        /*
         if(commandFirstsection.c_str()[3]-'0'>count){
             sprintf(buf,"con%d not found\n",commandFirstsection.c_str()[3]-'0');
             return buf;
         }
+        */
         command.seekg(0);
         if(!isSeatExist(command)){
             command.seekg(0);
+            P(semaphore);
             return findnotExistseat(command);
         }
         command.seekg(0);
         if(!isSeatEnough(command)){
+            P(semaphore);
             return "sorry, remaining ticket number not enough\n";
         }
         command.seekg(0);
+        P(semaphore);
         return orderTicket(command);
     }
     else{
@@ -347,22 +395,22 @@ void *handleRequest(void *ClientDataPtr){
     struct ClientData new_client_socket =*(ClientData*)ClientDataPtr;
     int MessageLength;
     char ReceiveMessage[BUFSIZE*10],SendMessage[BUFSIZE*10];
-    P(semaphore);
-    printf("accept client order : %d \n",new_client_socket.OrderCustomer);
+
+    //printf("accept client order : %d \n",new_client_socket.OrderCustomer);
 
     while(1){
 
         if ((MessageLength = read(new_client_socket.new_client_socket, ReceiveMessage, BUFSIZE)) == -1)
             pthread_exit(NULL);
     /* write message back to client */
-        printf("from no. %d client message = %.*s\n",new_client_socket.OrderCustomer,MessageLength,ReceiveMessage);
+        //printf("from no. %d client message = %.*s\n",new_client_socket.OrderCustomer,MessageLength,ReceiveMessage);
         command.str(ReceiveMessage);
         before_buy_time = time(NULL);
 
         //MessageLength = sprintf(SendMessage, "from no. %d client message = %.*s\n",new_client_socket.OrderCustomer,MessageLength,ReceiveMessage);
         MessageLength = sprintf(SendMessage, "%s",commandRecognize(command,new_client_socket.new_client_socket).c_str());
         //printf("done message = %s\n",commandRecognize(command).c_str());
-        printf("send message = %s\n",SendMessage);
+        //printf("send message = %s\n",SendMessage);
 
         if ((MessageLength = write(new_client_socket.new_client_socket, SendMessage, MessageLength)) == -1)
             pthread_exit(NULL);
@@ -373,10 +421,11 @@ void *handleRequest(void *ClientDataPtr){
 }
 
 int main(int argc, char const *argv[]) {
-    ifstream fin("concert.txt");
+    ifstream fin(argv[1]);
     string s;
     fin >> s;
     count = atoi(s.c_str());
+    con_count=count;
     con = new console [count];
     for (int i=0;i<count;i++){
         fin >> s;
@@ -392,11 +441,11 @@ int main(int argc, char const *argv[]) {
         }
 
     }
-    printf("read consert done\n");
-    ifstream fin2("console.txt");
+    //printf("read consert done\n");
+    ifstream fin2(argv[2]);
     fin2 >> s;
     int count2 = atoi(s.c_str());
-    printf("count2 = %d\n",count2);
+    //printf("count2 = %d\n",count2);
     limit *std;
     std = new limit [count2];
     for (int i=0;i<count2;i++){
@@ -409,11 +458,11 @@ int main(int argc, char const *argv[]) {
             std[i].add_seat_num(atoi(s.c_str()));
         }
     }
-    printf("read console done\n");
+    //printf("read console done\n");
     for(int i=0;i<count;i++){
         for(int j=0;j<count2;j++){
             if (con[i].get_stadium().compare(std[j].get_stadium())==0){
-                printf("con std= %s limit std = %s\n",con[i].get_stadium().c_str(),std[j].get_stadium().c_str());
+                //printf("con std= %s limit std = %s\n",con[i].get_stadium().c_str(),std[j].get_stadium().c_str());
                 con[i].check(std[j]);
             }
         }
@@ -428,7 +477,7 @@ int main(int argc, char const *argv[]) {
 	char SendMessage[BUFSIZE], ReceiveMessage[BUFSIZE];
 
 
-    if (sscanf(argv[2],"%ld",&key)!=1) {
+    if (sscanf(argv[4],"%ld",&key)!=1) {
         fprintf(stderr, "%s: argument #1 must be an long integer\n",
             argv[0]);
         exit(1);
@@ -441,10 +490,10 @@ int main(int argc, char const *argv[]) {
     }
 
 
-	if (argc != 3)
+	if (argc != 5)
 		errexit("Usage: %s port\n", argv[0]);
 	/* create socket and bind socket to port */
-	sockfd = passivesock(argv[1], "tcp",10);
+	sockfd = passivesock(argv[3], "tcp",10);
 	while(1){
 		/* wait for connection */
 		new_client_socket = accept(sockfd, (struct sockaddr *) &addr_cln, &sLen);
